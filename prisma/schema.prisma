@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["filterJson"]
+  previewFeatures = []
 }
 
 datasource db {
@@ -9,70 +9,99 @@ datasource db {
 }
 
 model Musician {
-  id           Int       @id @default(autoincrement())
-  name         String    @db.VarChar(100)
-  email        String?   @unique @db.VarChar(100)
-  phone        String?   @db.VarChar(20)
-  whatsapp_id  String?   @db.VarChar(50)  // Format: "5511999999999@c.us"
-  is_active    Boolean   @default(true)
-  schedules    Schedule[] @relation("PrimarySchedules")  // Escalas onde é titular
-  substitutes  Schedule[] @relation("SubstituteSchedules") // Escalas onde é substituto
-  audits       Audit[]
-  notifications WhatsAppMessage[]
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
+  id               Int                 @id @default(autoincrement())
+  name             String              @db.VarChar(100)
+  email            String?             @unique @db.VarChar(100)
+  phone            String?             @db.VarChar(20)
+  whatsapp_id      String?             @db.VarChar(50)
+  is_active        Boolean             @default(true)
+  
+  // Relacionamentos como "lado A"
+  recurring_schedules RecurringSchedule[] @relation("MusicianRecurringSchedules")
+  schedules          Schedule[]          @relation("MusicianSchedules")
+  substitute_schedules Schedule[]        @relation("MusicianSubstitutes")
+  whatsapp_messages  WhatsAppMessage[]   @relation("MusicianWhatsAppMessages")
+  
+  created_at       DateTime            @default(now())
+  updated_at       DateTime            @updatedAt
   @@map("musicians")
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
-  date        DateTime
-  day_of_week String   @db.VarChar(20) @map("day_of_week")
-  time        String   @db.VarChar(10)  // Ex: "19:00"
-  location    String   @db.VarChar(100)
-  type        String   @default("Mass")
-  schedules   Schedule[]
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id               Int                 @id @default(autoincrement())
+  date             DateTime
+  day_of_week      String              @db.VarChar(20) @map("day_of_week")
+  time             String              @db.VarChar(10)
+  location         String              @db.VarChar(100)
+  type             String              @default("Mass")
+  
+  // Relacionamentos como "lado A"
+  schedules        Schedule[]          @relation("EventSchedules")
+  
+  created_at       DateTime            @default(now())
+  updated_at       DateTime            @updatedAt
   @@map("events")
 }
 
-model Schedule {
-  id          Int      @id @default(autoincrement())
-  event       Event    @relation(fields: [event_id], references: [id])
-  event_id    Int      @map("event_id")
-  musician    Musician @relation("PrimarySchedules", fields: [musician_id], references: [id])
-  musician_id Int      @map("musician_id") 
-  substitute  Musician? @relation("SubstituteSchedules", fields: [substitute_id], references: [id])
-  substitute_id Int?    @map("substitute_id")
-  audits      Audit[]
-  created_at  DateTime @default(now()) @map("created_at")
-  @@map("schedules")  // Tabela no banco
+model RecurringSchedule {
+  id               Int                 @id @default(autoincrement())
+  
+  // Relacionamentos
+  musician         Musician            @relation("MusicianRecurringSchedules", fields: [musician_id], references: [id])
+  musician_id      Int
+  
+  week_of_month    Int
+  day_of_week      String              @db.VarChar(20)
+  created_at       DateTime            @default(now())
+  @@map("recurring_schedules")
 }
 
-// ==================== AUDIT & NOTIFICATIONS ==================== //
+model Schedule {
+  id               Int                 @id @default(autoincrement())
+  
+  // Relacionamentos
+  event            Event               @relation("EventSchedules", fields: [event_id], references: [id])
+  event_id         Int
+  
+  musician         Musician            @relation("MusicianSchedules", fields: [musician_id], references: [id])
+  musician_id      Int
+  
+  substitute       Musician?           @relation("MusicianSubstitutes", fields: [substitute_id], references: [id])
+  substitute_id    Int?
+  
+  is_recurring     Boolean             @default(true)
+  audits           ScheduleAudit[]     @relation("ScheduleAudits")
+  
+  created_at       DateTime            @default(now())
+  @@map("schedules")
+}
 
-model Audit {
-  id              Int      @id @default(autoincrement())
-  affected_table  String   @db.VarChar(50) @map("affected_table")
-  record_id       Int      @map("record_id")
-  action          String   @db.VarChar(20)  // "CREATE", "UPDATE", "DELETE"
-  old_data        String?  @db.Json @map("old_data")
-  new_data        String?  @db.Json @map("new_data")
-  user            String?  @db.VarChar(100)
-  musician        Musician? @relation(fields: [musician_id], references: [id])
-  musician_id     Int?     @map("musician_id")
-  created_at      DateTime @default(now()) @map("created_at")
-  @@map("audits")
+model ScheduleAudit {
+  id               Int                 @id @default(autoincrement())
+  action           String              @db.VarChar(20)
+  old_data         Json?
+  new_data         Json?
+  changed_by       String?             @db.VarChar(100)
+  
+  // Relacionamentos
+  schedule         Schedule            @relation("ScheduleAudits", fields: [schedule_id], references: [id])
+  schedule_id      Int
+  
+  created_at       DateTime            @default(now())
+  @@map("schedule_audits")
 }
 
 model WhatsAppMessage {
-  id          Int      @id @default(autoincrement())
-  musician    Musician @relation(fields: [musician_id], references: [id])
-  musician_id Int      @map("musician_id")
-  message     String   @db.Text
-  status      String   @db.VarChar(20) @default("PENDING")  // "SENT", "FAILED"
-  api_response String? @db.Json @map("api_response")
-  created_at  DateTime @default(now()) @map("created_at")
+  id               Int                 @id @default(autoincrement())
+  
+  // Relacionamentos
+  musician         Musician            @relation("MusicianWhatsAppMessages", fields: [musician_id], references: [id])
+  musician_id      Int
+  
+  message          String              @db.Text
+  status           String              @db.VarChar(20) @default("PENDING")
+  api_response     Json?
+  
+  created_at       DateTime            @default(now())
   @@map("whatsapp_messages")
 }
