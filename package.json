@@ -1,0 +1,26 @@
+{
+    "scripts": {
+      "dev": "ts-node-dev src/server.ts",
+      "build": "tsc",
+      "start": "node dist/server.js",
+      "test": "jest --watchAll",
+      "test:cov": "jest --coverage",
+      "db:migrate": "npx prisma migrate dev",
+      "db:studio": "npx prisma studio",
+      "docker:up": "docker-compose up -d",
+      "docker:down": "docker-compose down"
+    },
+    "dependencies": {
+      "@fastify/jwt": "^8.0.0",
+      "@prisma/client": "^5.0.0",
+      "fastify": "^4.0.0",
+      "axios": "^1.0.0"
+    },
+    "devDependencies": {
+      "@types/jest": "^29.0.0",
+      "jest": "^29.0.0",
+      "prisma": "^5.0.0",
+      "ts-node-dev": "^2.0.0",
+      "typescript": "^5.0.0"
+    }
+  }

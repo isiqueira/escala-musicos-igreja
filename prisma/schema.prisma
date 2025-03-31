@@ -1,0 +1,78 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["filterJson"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Musician {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(100)
+  email        String?   @unique @db.VarChar(100)
+  phone        String?   @db.VarChar(20)
+  whatsapp_id  String?   @db.VarChar(50)  // Format: "5511999999999@c.us"
+  is_active    Boolean   @default(true)
+  schedules    Schedule[] @relation("PrimarySchedules")  // Escalas onde é titular
+  substitutes  Schedule[] @relation("SubstituteSchedules") // Escalas onde é substituto
+  audits       Audit[]
+  notifications WhatsAppMessage[]
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  @@map("musicians")
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  day_of_week String   @db.VarChar(20) @map("day_of_week")
+  time        String   @db.VarChar(10)  // Ex: "19:00"
+  location    String   @db.VarChar(100)
+  type        String   @default("Mass")
+  schedules   Schedule[]
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  @@map("events")
+}
+
+model Schedule {
+  id          Int      @id @default(autoincrement())
+  event       Event    @relation(fields: [event_id], references: [id])
+  event_id    Int      @map("event_id")
+  musician    Musician @relation("PrimarySchedules", fields: [musician_id], references: [id])
+  musician_id Int      @map("musician_id") 
+  substitute  Musician? @relation("SubstituteSchedules", fields: [substitute_id], references: [id])
+  substitute_id Int?    @map("substitute_id")
+  audits      Audit[]
+  created_at  DateTime @default(now()) @map("created_at")
+  @@map("schedules")  // Tabela no banco
+}
+
+// ==================== AUDIT & NOTIFICATIONS ==================== //
+
+model Audit {
+  id              Int      @id @default(autoincrement())
+  affected_table  String   @db.VarChar(50) @map("affected_table")
+  record_id       Int      @map("record_id")
+  action          String   @db.VarChar(20)  // "CREATE", "UPDATE", "DELETE"
+  old_data        String?  @db.Json @map("old_data")
+  new_data        String?  @db.Json @map("new_data")
+  user            String?  @db.VarChar(100)
+  musician        Musician? @relation(fields: [musician_id], references: [id])
+  musician_id     Int?     @map("musician_id")
+  created_at      DateTime @default(now()) @map("created_at")
+  @@map("audits")
+}
+
+model WhatsAppMessage {
+  id          Int      @id @default(autoincrement())
+  musician    Musician @relation(fields: [musician_id], references: [id])
+  musician_id Int      @map("musician_id")
+  message     String   @db.Text
+  status      String   @db.VarChar(20) @default("PENDING")  // "SENT", "FAILED"
+  api_response String? @db.Json @map("api_response")
+  created_at  DateTime @default(now()) @map("created_at")
+  @@map("whatsapp_messages")
+}
