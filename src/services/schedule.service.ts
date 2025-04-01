@@ -1,5 +1,5 @@
-import  prisma from '../../lib/prisma';
-import { CreateScheduleInput, ScheduleWithRelations, UpdateScheduleInput } from './schedule.types';
+import  prisma from '../lib/prisma';
+import { CreateScheduleInput, ScheduleWithRelations, UpdateScheduleInput } from '../modules/schedules/schedule.types';
 
 export class ScheduleService {
   async createSchedule(data: CreateScheduleInput, changedBy: string) {
