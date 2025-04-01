@@ -1,79 +1,85 @@
 import  prisma from '../lib/prisma';
-import { CreateScheduleInput, ScheduleWithRelations, UpdateScheduleInput } from '../modules/schedules/schedule.types';
+import { CreateScheduleDto } from '../schemas/schedule.schema';
 
-export class ScheduleService {
-  async createSchedule(data: CreateScheduleInput, changedBy: string) {
-    const schedule = await prisma.schedule.create({
+export const scheduleService = {
+  async createSchedule(data: CreateScheduleDto) {
+    return prisma.schedule.create({
       data: {
-        event_id: data.event_id,
-        musician_id: data.musician_id,
+        date: data.date,
+        description: data.description,
+        churchId: data.churchId,
+        musicians: {
+          connect: data.musicianIds?.map(id => ({ id })) || []
+        }
       },
+      include: {
+        church: true,
+        musicians: true
+      }
     });
+  },
 
-    // Auditoria
-    await prisma.scheduleAudit.create({
-      data: {
-        action: 'CREATE',
-        new_data: schedule,
-        changed_by: changedBy,
-        schedule_id: schedule.id,
-      },
-    });
-
-    return this.getScheduleById(schedule.id);
-  }
-
-  async updateSchedule(
-    id: number,
-    data: UpdateScheduleInput,
-    changedBy: string
-  ) {
-    const oldSchedule = await prisma.schedule.findUnique({ where: { id } });
-
-    const updatedSchedule = await prisma.schedule.update({
-      where: { id },
-      data: {
-        substitute_id: data.substitute_id,
-      },
-    });
-
-    // Auditoria
-    await prisma.scheduleAudit.create({
-      data: {
-        action: 'UPDATE',
-        old_data: oldSchedule,
-        new_data: updatedSchedule,
-        changed_by: changedBy,
-        schedule_id: id,
-      },
-    });
-
-    return this.getScheduleById(id);
-  }
-
-  async getScheduleById(id: number): Promise<ScheduleWithRelations> {
-    return prisma.schedule.findUniqueOrThrow({
+  async getScheduleById(id: string) {
+    return prisma.schedule.findUnique({
       where: { id },
       include: {
-        event: true,
-        musician: true,
-        substitute: true,
-        audits: {
-          orderBy: { created_at: 'desc' },
-          take: 10,
-        },
-      },
+        church: true,
+        musicians: true
+      }
     });
-  }
+  },
 
-  async listSchedulesByEvent(eventId: number) {
+  async getSchedulesByChurch(churchId: string) {
     return prisma.schedule.findMany({
-      where: { event_id: eventId },
+      where: { churchId },
       include: {
-        musician: true,
-        substitute: true,
+        church: true,
+        musicians: true
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: { date: 'asc' }
+    });
+  },
+
+  async getUpcomingSchedules(days: number = 30) {
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(startDate.getDate() + days);
+
+    return prisma.schedule.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lte: endDate
+        }
+      },
+      include: {
+        church: true,
+        musicians: true
+      },
+      orderBy: { date: 'asc' }
+    });
+  },
+
+  async updateSchedule(id: string, data: any) {
+    return prisma.schedule.update({
+      where: { id },
+      data: {
+        date: data.date,
+        description: data.description,
+        musicians: {
+          set: data.musicianIds?.map(id => ({ id })) || []
+        }
+      },
+      include: {
+        church: true,
+        musicians: true
+      }
+    });
+  },
+
+  async deleteSchedule(id: string) {
+    return prisma.schedule.delete({
+      where: { id }
     });
   }
-}
+};

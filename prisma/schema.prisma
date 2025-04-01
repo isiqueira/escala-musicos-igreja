@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = []
 }
 
 datasource db {
@@ -8,54 +9,61 @@ datasource db {
 }
 
 model Church {
-  id                String    @id @default(uuid())
-  name              String
-  location          String?
-  schedules         Schedule[]
+  id                 String             @id @default(uuid())
+  name               String             @unique
+  description        String?
+  address            String?
+  schedules          Schedule[]
   recurringSchedules RecurringSchedule[]
-}
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
-model Musician {
-  id                String    @id @default(uuid())
-  name              String
-  email             String?   @unique
-  phone             String?
-  whatsapp_id       String?
-  is_active         Boolean   @default(true)
-  recurring_schedules RecurringSchedule[]
-  schedules         Schedule[]
-  substitute_schedules Schedule[] @relation("Substitutes")
-  whatsapp_messages WhatsAppMessage[]
+  @@map("churches")
 }
 
 model Schedule {
-  id               String    @id @default(uuid())
-  date             DateTime
-  musician_id      String
-  substitute_id    String?
-  church_id        String
-  musician         Musician  @relation(fields: [musician_id], references: [id])
-  substitute       Musician? @relation("Substitutes", fields: [substitute_id], references: [id])
-  church           Church    @relation(fields: [church_id], references: [id])
-  recurring_schedule RecurringSchedule? @relation(fields: [recurring_scheduleid], references: [id])
-  recurring_scheduleid String?
+  id          String     @id @default(uuid())
+  date        DateTime
+  description String?
+  church      Church     @relation(fields: [churchId], references: [id])
+  churchId    String
+  musicians   Musician[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([date])
+  @@map("schedules")
 }
 
 model RecurringSchedule {
-  id              String   @id @default(uuid())
-  day_of_week     Int
-  time            String
-  musician_id     String
-  church_id       String
-  musician        Musician  @relation(fields: [musician_id], references: [id])
-  church          Church    @relation(fields: [church_id], references: [id])
-  schedules       Schedule[]
+  id          String     @id @default(uuid())
+  dayOfWeek   Int        @default(0) // 0=Domingo, 6=Sábado
+  frequency   Frequency  @default(WEEKLY)
+  description String?
+  church      Church     @relation(fields: [churchId], references: [id])
+  churchId    String
+  musicians   Musician[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("recurring_schedules")
 }
 
-model WhatsAppMessage {
-  id              String    @id @default(uuid())
-  musician_id     String
-  message         String
-  sent_at         DateTime
-  musician        Musician  @relation(fields: [musician_id], references: [id])
+model Musician {
+  id                 String             @id @default(uuid())
+  name               String
+  email              String             @unique
+  instruments        String[]           @default([])
+  schedules          Schedule[]
+  recurringSchedules RecurringSchedule[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@map("musicians")
+}
+
+enum Frequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
 }

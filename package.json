@@ -1,37 +1,61 @@
 {
-    "scripts": {
-        "dev": "ts-node-dev src/server.ts",
-        "build": "tsc",
-        "start": "node dist/server.js",
-        "test": "jest",
-        "test:watch": "jest --watchAll",
-        "test:cov": "jest --coverage",
-        "db:migrate": "npx prisma migrate dev",
-        "db:studio": "npx prisma studio",
-        "docker:up": "docker-compose up -d",
-        "docker:down": "docker-compose down",
-        "postinstall": "prisma generate",
-        "prisma:generate": "prisma generate",
-        "prisma:migrate": "prisma migrate dev",
-        "generate:schedules": "ts-node scripts/generate-monthly-schedules.ts"
-    },
-    "dependencies": {
-        "@fastify/jwt": "^8.0.0",
-        "@prisma/client": "^6.5.0",
-        "axios": "^1.0.0",
-        "class-transformer": "^0.5.1",
-        "class-validator": "^0.14.1",
-        "fastify": "^4.0.0",
-        "jest-cucumber": "^4.5.0",
-        "zod": "^3.24.2"
-    },
-    "devDependencies": {
-        "@types/jest": "^29.5.14",
-        "jest": "^29.7.0",
-        "jest-mock-extended": "^4.0.0-beta1",
-        "prisma": "^6.5.0",
-        "ts-jest": "^29.3.1",
-        "ts-node-dev": "^2.0.0",
-        "typescript": "^5.0.0"
+  "name": "escala-musicos-igreja",
+  "version": "1.0.0",
+  "description": "Sistema de gestão de escalas de músicos para igrejas",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "test": "jest",
+    "test:cov": "jest --coverage",
+    "coverage": "codecov"
+  },
+  "dependencies": {
+    "@fastify/swagger": "^8.13.0",
+    "@fastify/swagger-ui": "^1.9.0",
+    "@prisma/client": "^5.5.2",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.24.3",
+    "fastify-type-provider-zod": "^4.0.2",
+    "prisma": "^5.5.2",
+    "prisma-erd-generator": "^2.0.4",
+    "zod": "^3.22.4",
+    "zod-to-json-schema": "^3.21.4"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.0.2",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.11.19",
+    "codecov": "^3.8.3",
+    "jest": "^29.7.0",
+    "pino-pretty": "^10.2.3",
+    "ts-jest": "^29.1.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts",
+    "erd": {
+      "output": "prisma/ERD.svg",
+      "theme": "forest"
     }
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/server.ts"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

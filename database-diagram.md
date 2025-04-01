@@ -1,7 +1,3 @@
-# escala-musicos-igreja
-
-## Diagrama do Banco de Dados
-
 ```mermaid
 erDiagram
   Church ||--o{ Schedule : "1:N"
