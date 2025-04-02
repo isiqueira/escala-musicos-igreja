@@ -15,27 +15,14 @@
     "coverage": "codecov"
   },
   "dependencies": {
-    "@fastify/swagger": "^8.13.0",
-    "@fastify/swagger-ui": "^1.9.0",
-    "@prisma/client": "^5.5.2",
-    "dotenv": "^16.3.1",
-    "fastify": "^4.24.3",
+    "@cucumber/cucumber": "^11.2.0",
+    "@fastify/swagger": "^9.4.2",
+    "@fastify/swagger-ui": "^5.2.2",
+    "@prisma/client": "^6.5.0",
+    "fastify": "^5.2.2",
     "fastify-type-provider-zod": "^4.0.2",
-    "prisma": "^5.5.2",
-    "prisma-erd-generator": "^2.0.4",
-    "zod": "^3.22.4",
-    "zod-to-json-schema": "^3.21.4"
-  },
-  "devDependencies": {
-    "@faker-js/faker": "^8.0.2",
-    "@types/jest": "^29.5.11",
-    "@types/node": "^20.11.19",
-    "codecov": "^3.8.3",
-    "jest": "^29.7.0",
-    "pino-pretty": "^10.2.3",
-    "ts-jest": "^29.1.1",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "pino-pretty": "^13.0.0",
+    "zod": "^3.24.2"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts",
@@ -57,5 +44,10 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^5.2.1",
+    "@types/jest": "^29.5.14",
+    "chai": "^5.2.0"
   }
 }
