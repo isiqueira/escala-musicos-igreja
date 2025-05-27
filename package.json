@@ -23,7 +23,7 @@
     "fastify-type-provider-zod": "^4.0.2",
     "jest": "^29.7.0",
     "pino-pretty": "^13.0.0",
-    "zod": "^3.24.4"
+    "zod": "^3.25.28"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts",
