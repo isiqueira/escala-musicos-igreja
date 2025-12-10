@@ -15,7 +15,7 @@
     "coverage": "codecov"
   },
   "dependencies": {
-    "@cucumber/cucumber": "^12.2.0",
+    "@cucumber/cucumber": "^12.3.0",
     "@fastify/swagger": "^9.6.1",
     "@fastify/swagger-ui": "^5.2.3",
     "@prisma/client": "^7.1.0",
